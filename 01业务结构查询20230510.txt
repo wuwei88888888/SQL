@@ -1,0 +1,687 @@
+DECLARE @BeginDate VARCHAR(10)
+DECLARE @EndDate VARCHAR(10)
+
+SET @BeginDate = {提交开始时间}
+SET @EndDate ={提交结束时间}
+
+SELECT @BeginDate                                                                                                                                                                                                                                      AS 提交开始时间,
+       @EndDate                                                                                                                                                                                                                                        AS 提交结束时间,
+       NULLIF(Sum(db.总色令), 0) / NULLIF(Sum(db.总纸令), 0)                                                                                                                                                                                                 彩色化总比值,
+       ( Sum(db.总色令) - Isnull(Sum(db.集团教材外色令), 0) ) / NULLIF(( Sum(db.总纸令) - Isnull(Sum(db.集团教材外纸令), 0) ), 0)                                                                                                                                          彩色化本级比值,
+       ( Sum(db.总色令) - Isnull(Sum(db.集团教材外色令), 0) - Isnull(Sum(db.集团教材内色令), 0) ) / NULLIF(( Sum(db.总纸令) - Isnull(Sum(db.集团教材外纸令), 0) - Isnull(Sum(db.集团教材内纸令), 0) ), 0)                                                                                彩色化本级不含教材比值,
+       Ltrim(Cast(( Sum(db.期刊色令) * 100 / Sum(db.总色令 - Isnull(db.集团教材外色令, 0)) ) AS NUMERIC(10, 2))) + '%'                                                                                                                                               本级期刊占比,
+       Ltrim(Cast(( Sum(db.集团出版社色令) * 100 / Sum(db.总色令 - Isnull(db.集团教材外色令, 0)) ) AS NUMERIC(10, 2))) + '%'                                                                                                                                            本级集团出版社占比,
+       Ltrim(Cast(( Sum(db.集团教材内色令) * 100 / Sum(db.总色令 - Isnull(db.集团教材外色令, 0)) ) AS NUMERIC(10, 2))) + '%'                                                                                                                                            本级集团教材占比,
+       Ltrim(Cast(( Sum(db.外贸订单色令) * 100 / NULLIF(Sum(db.总色令 - Isnull(db.集团教材外色令, 0)), 0) ) AS NUMERIC(10, 2))) + '%'                                                                                                                                  本级外贸订单占比,
+       Ltrim(Cast(( Sum(db.总色令 - Isnull(db.期刊色令, 0) - Isnull(db.集团出版社色令, 0) - Isnull(db.集团教材内色令, 0) - Isnull(db.集团教材外色令, 0) - Isnull(db.外贸订单色令, 0)) * 100 / NULLIF(Sum(db.总色令 - Isnull(db.集团教材外色令, 0)), 0) ) AS NUMERIC(10, 2))) + '%'                 本级其它板块占比,
+       Sum(db.总色令)                                                                                                                                                                                                                                     AS 总色令,
+       Sum(db.总色令 - Isnull(db.集团教材外色令, 0))                                                                                                                                                                                                             本级总色令,
+       Sum(db.期刊色令)                                                                                                                                                                                                                                    期刊色令,
+       Sum(db.集团出版社色令)                                                                                                                                                                                                                                 集团出版社色令,
+       Sum(db.集团教材内色令)                                                                                                                                                                                                                                 集团教材内色令,
+       Sum(db.集团教材外色令)                                                                                                                                                                                                                                 集团教材外色令,
+       Sum(db.外贸订单色令)                                                                                                                                                                                                                                  外贸订单色令,
+       Sum(db.总色令 - Isnull(db.期刊色令, 0) - Isnull(db.集团出版社色令, 0) - Isnull(db.集团教材内色令, 0) - Isnull(db.集团教材外色令, 0) - Isnull(db.外贸订单色令, 0))                                                                                                                 其它板块色令,
+       Ltrim(Cast(( Sum(db.期刊销售收入) * 100 / NULLIF(Sum(db.总销售收入 - Isnull(db.集团教材外销售收入, 0)), 0) ) AS NUMERIC(10, 2))) + '%'                                                                                                                              本级期刊收入占比,
+       Ltrim(Cast(( Sum(db.集团出版社销售收入) * 100 / NULLIF(Sum(db.总销售收入 - Isnull(db.集团教材外销售收入, 0)), 0) ) AS NUMERIC(10, 2))) + '%'                                                                                                                           本级集团出版社收入占比,
+       Ltrim(Cast(( Sum(db.集团教材内销售收入) * 100 / NULLIF(Sum(db.总销售收入 - Isnull(db.集团教材外销售收入, 0)), 0) ) AS NUMERIC(10, 2))) + '%'                                                                                                                           本级集团教材收入占比,
+       Ltrim(Cast(( Sum(db.外贸订单销售收入) * 100 / NULLIF(Sum(db.总销售收入 - Isnull(db.集团教材外销售收入, 0)), 0) ) AS NUMERIC(10, 2))) + '%'                                                                                                                            本级外贸订单收入占比,
+       Ltrim(Cast(( Sum(db.总销售收入 - Isnull(db.期刊销售收入, 0) - Isnull(db.集团出版社销售收入, 0) - Isnull(db.集团教材内销售收入, 0) - Isnull(db.集团教材外销售收入, 0) - Isnull(db.外贸订单销售收入, 0)) * 100 / NULLIF(Sum(db.总销售收入 - Isnull(db.集团教材外销售收入, 0)), 0) ) AS NUMERIC(10, 2))) + '%' 本级其它板块收入占比,
+       Sum(db.总销售收入)                                                                                                                                                                                                                                   总销售收入,
+       Sum(db.总销售收入 - Isnull(db.集团教材外销售收入, 0))                                                                                                                                                                                                         本级销售收入,
+       Sum(db.期刊销售收入)                                                                                                                                                                                                                                  期刊销售收入,
+       Sum(db.集团出版社销售收入)                                                                                                                                                                                                                               集团出版社销售收入,
+       Sum(db.集团教材内销售收入)                                                                                                                                                                                                                               集团教材内销售收入,
+       Sum(db.集团教材外销售收入)                                                                                                                                                                                                                               集团教材外销售收入,
+       Sum(db.外贸订单销售收入)                                                                                                                                                                                                                                外贸订单销售收入,
+       Sum(db.总销售收入 - Isnull(db.期刊销售收入, 0) - Isnull(db.集团出版社销售收入, 0) - Isnull(db.集团教材内销售收入, 0) - Isnull(db.集团教材外销售收入, 0) - Isnull(db.外贸订单销售收入, 0))                                                                                                     其它板块销售收入,
+       Sum(db.总销售毛利)                                                                                                                                                                                                                                   总销售毛利,
+       Sum(db.总销售毛利 - Isnull(db.集团教材外销售毛利, 0))                                                                                                                                                                                                         本级销售毛利,
+       Sum(db.期刊销售毛利)                                                                                                                                                                                                                                  期刊销售毛利,
+       Sum(db.集团出版社销售毛利)                                                                                                                                                                                                                               集团出版社销售毛利,
+       Sum(db.集团教材内销售毛利)                                                                                                                                                                                                                               集团教材内销售毛利,
+       Sum(db.集团教材外销售毛利)                                                                                                                                                                                                                               集团教材外销售毛利,
+       Sum(db.外贸订单销售毛利)                                                                                                                                                                                                                                外贸订单销售毛利,
+       Sum(db.总销售毛利 - Isnull(db.期刊销售毛利, 0) - Isnull(db.集团出版社销售毛利, 0) - Isnull(db.集团教材内销售毛利, 0) - Isnull(db.集团教材外销售毛利, 0) - Isnull(db.外贸订单销售毛利, 0))                                                                                                     其它板块销售毛利,
+       Sum(db.总纸令)                                                                                                                                                                                                                                     总纸令,
+       Sum(db.总纸令 - Isnull(db.集团教材外纸令, 0))                                                                                                                                                                                                             本级总纸令,
+       Sum(db.期刊纸令)                                                                                                                                                                                                                                    期刊纸令,
+       Sum(db.集团出版社纸令)                                                                                                                                                                                                                                 集团出版社纸令,
+       Sum(db.集团教材内纸令)                                                                                                                                                                                                                                 集团教材内纸令,
+       Sum(db.集团教材外纸令)                                                                                                                                                                                                                                 集团教材外纸令,
+       Sum(db.外贸订单纸令)                                                                                                                                                                                                                                  外贸订单纸令,
+       Sum(db.总纸令 - Isnull(db.期刊纸令, 0) - Isnull(db.集团出版社纸令, 0) - Isnull(db.集团教材内纸令, 0) - Isnull(db.集团教材外纸令, 0) - Isnull(db.外贸订单纸令, 0))                                                                                                                 其它板块纸令,
+       Sum(db.总销售工价)                                                                                                                                                                                                                                   总销售工价,
+       Sum(db.总销售工价 - Isnull(db.集团教材外销售工价, 0))                                                                                                                                                                                                         本级销售工价,
+       Sum(db.期刊销售工价)                                                                                                                                                                                                                                  期刊销售工价,
+       Sum(db.集团出版社销售工价)                                                                                                                                                                                                                               集团出版社销售工价,
+       Sum(db.集团教材内销售工价)                                                                                                                                                                                                                               集团教材内销售工价,
+       Sum(db.集团教材外销售工价)                                                                                                                                                                                                                               集团教材外销售工价,
+       Sum(db.外贸订单销售工价)                                                                                                                                                                                                                                外贸订单销售工价,
+       Sum(db.总销售工价 - Isnull(db.期刊销售工价, 0) - Isnull(db.集团出版社销售工价, 0) - Isnull(db.集团教材内销售工价, 0) - Isnull(db.集团教材外销售工价, 0) - Isnull(db.外贸订单销售工价, 0))                                                                                                     其它板块销售工价,
+       Sum(db.总销售料价)                                                                                                                                                                                                                                   总销售料价
+FROM   (SELECT DISTINCT a.承印日期                                                                                                                                日期,
+                        t5.总色令,
+                        t5.总色令 - Isnull(t3.集团教材外色令, 0)                                                                                                        本级总色令,
+                        G.期刊色令,
+                        T1.集团出版社色令,
+                        t2.集团教材内色令,
+                        t3.集团教材外色令,
+                        t4.外贸订单色令,
+                        t5.总色令 - Isnull(G.期刊色令, 0) - Isnull(T1.集团出版社色令, 0) - Isnull(t2.集团教材内色令, 0) - Isnull(t3.集团教材外色令, 0) - Isnull(t4.外贸订单色令, 0)             其它板块色令,
+                        t5.总销售收入,
+                        t5.总销售收入 - Isnull(t3.集团教材外销售收入, 0)                                                                                                    本级销售收入,
+                        G.期刊销售收入,
+                        T1.集团出版社销售收入,
+                        t2.集团教材内销售收入,
+                        t3.集团教材外销售收入,
+                        t4.外贸订单销售收入,
+                        t5.总销售收入 - Isnull(G.期刊销售收入, 0) - Isnull(T1.集团出版社销售收入, 0) - Isnull(t2.集团教材内销售收入, 0) - Isnull(t3.集团教材外销售收入, 0) - Isnull(t4.外贸订单销售收入, 0) 其它板块销售收入,
+                        t5.总销售毛利,
+                        t5.总销售毛利 - Isnull(t3.集团教材外销售毛利, 0)                                                                                                    本级销售毛利,
+                        g.期刊销售毛利,
+                        T1.集团出版社销售毛利,
+                        t2.集团教材内销售毛利,
+                        t3.集团教材外销售毛利,
+                        t4.外贸订单销售毛利,
+                        t5.总销售毛利 - Isnull(G.期刊销售毛利, 0) - Isnull(T1.集团出版社销售毛利, 0) - Isnull(t2.集团教材内销售毛利, 0) - Isnull(t3.集团教材外销售毛利, 0) - Isnull(t4.外贸订单销售毛利, 0) 其它板块销售毛利,
+                        NULLIF(t5.总色令, 0) / NULLIF(t5.总纸令, 0)                                                                                                 彩色化总比值,
+                        ( t5.总色令 - Isnull(t3.集团教材外色令, 0) ) / NULLIF(( t5.总纸令 - Isnull(t3.集团教材外纸令, 0) ), 0)                                                    彩色化本级比值,
+                        t5.总纸令,
+                        t5.总纸令 - Isnull(t3.集团教材外纸令, 0)                                                                                                        本级总纸令,
+                        G.期刊纸令,
+                        T1.集团出版社纸令,
+                        t2.集团教材内纸令,
+                        t3.集团教材外纸令,
+                        t4.外贸订单纸令,
+                        t5.总纸令 - Isnull(G.期刊纸令, 0) - Isnull(T1.集团出版社纸令, 0) - Isnull(t2.集团教材内纸令, 0) - Isnull(t3.集团教材外纸令, 0) - Isnull(t4.外贸订单纸令, 0)             其它板块纸令,
+                        t5.总销售工价,
+                        t5.总销售工价 - Isnull(t3.集团教材外销售工价, 0)                                                                                                    本级销售工价,
+                        G.期刊销售工价,
+                        T1.集团出版社销售工价,
+                        t2.集团教材内销售工价,
+                        t3.集团教材外销售工价,
+                        t4.外贸订单销售工价,
+                        t5.总销售工价 - Isnull(G.期刊销售工价, 0) - Isnull(T1.集团出版社销售工价, 0) - Isnull(t2.集团教材内销售工价, 0) - Isnull(t3.集团教材外销售工价, 0) - Isnull(t4.外贸订单销售工价, 0) 其它板块销售工价,
+                        t5.总销售料价,
+                        t5.总销售料价 - Isnull(t3.集团教材外销售料价, 0)                                                                                                    本级销售料价,
+                        G.期刊销售料价,
+                        T1.集团出版社销售料价,
+                        t2.集团教材内销售料价,
+                        t3.集团教材外销售料价,
+                        t4.外贸订单销售料价,
+                        t5.总销售料价 - Isnull(G.期刊销售料价, 0) - Isnull(T1.集团出版社销售料价, 0) - Isnull(t2.集团教材内销售料价, 0) - Isnull(t3.集团教材外销售料价, 0) - Isnull(t4.外贸订单销售料价, 0) 其它板块销售料价
+        FROM   (SELECT CONVERT(CHAR(10), DCYRQ, 121) AS 承印日期
+                FROM   MCYD) a
+               LEFT JOIN (SELECT dd.承印日期           承印时间,
+                                 Sum(dd.印令)        期刊纸令,
+                                 Sum(dd.色令)        期刊色令,
+                                 Sum(dd.不含税销售收入)   期刊销售收入,
+                                 Sum(dd.不含税销售收入工价) 期刊销售工价,
+                                 Sum(dd.不含税销售收入料价) 期刊销售料价,
+                                 Sum(dd.不含税考核计算毛利) 期刊销售毛利
+                          FROM   (SELECT CASE
+                                           WHEN Isnull(ldz, 0) = 1 THEN '是'
+                                           ELSE '否'
+                                         END                           登账,
+                                         CONVERT(CHAR(10), DCYRQ, 121) AS 承印日期,
+                                         ObjMatier.nysls               AS 印令,
+                                         ObjMatier.nyssl               AS 色令,
+                                         CYJLX                         AS 印件类型,
+                                         CHY                           AS 活源,
+                                         CASE
+                                           WHEN Isnull(ldz, 0) = 0 THEN( Isnull(nwshjje, 0) - Isnull(nwsbzhjje, 0) )
+                                           ELSE ( Isnull(tj.sum_namount, 0) - ( Isnull(tb_in.sum_ngjje_in, 0) + CASE
+                                                                                                                  WHEN ( Isnull(tj.sum_clje, 0) ) = 0 THEN 0
+                                                                                                                  ELSE ( CASE
+                                                                                                                           WHEN ( Isnull(tb_out.sum_nhjje_out, 0) > ( Isnull(tj.sum_namount, 0) - Isnull(tj.sum_clje, 0) ) * 1.5 ) THEN 0
+                                                                                                                           ELSE ( CASE
+                                                                                                                                    WHEN Isnull(tb_out.sum_nclje_out, 0) > 0 THEN Isnull(tj.sum_clje, 0) - Isnull(tb_out.sum_nclje_out, 0)
+                                                                                                                                    ELSE Isnull(tj.sum_clje, 0)
+                                                                                                                                  END )
+                                                                                                                         END )
+                                                                                                                END ) - Isnull(tb_out.sum_nhjje_out, 0) )
+                                         END                           AS 不含税考核计算毛利,
+                                         CASE
+                                           WHEN Isnull(ldz, 0) = 0 THEN ( Isnull(nwsgjhj, 0) - Isnull(nwsbzgjhj, 0) )
+                                           ELSE Isnull(tj.sum_namount, 0) - Isnull(tj.sum_clje, 0) - Isnull(tb_in.sum_ngjje_in, 0) - Isnull(tb_out.sum_ngjje_out, 0)
+                                         END                           AS 不含税考核计算工价毛利,
+                                         CASE
+                                           WHEN Isnull(ldz, 0) = 0 THEN Isnull(nwshjje, 0)
+                                           ELSE Isnull(tj.sum_namount, 0)
+                                         END                           AS 不含税销售收入,
+                                         CASE
+                                           WHEN Isnull(ldz, 0) = 0 THEN Isnull(nwsgjhj, 0)
+                                           ELSE Isnull(tj.sum_namount, 0) - Isnull(tj.sum_clje, 0)
+                                         END                           AS 不含税销售收入工价,
+                                         CASE
+                                           WHEN Isnull(ldz, 0) = 0 THEN Isnull(nwsclhj, 0)
+                                           ELSE Isnull(tj.sum_clje, 0)
+                                         END                           AS 不含税销售收入料价
+                                  FROM   MCYD Ord
+                                         LEFT JOIN (SELECT ICYDID,
+                                                           Max(Nsc) AS Nsc
+                                                    FROM   SCYDDX
+                                                    WHERE  IDXLXID = 573
+                                                    GROUP  BY ICYDID) AS Obj
+                                           ON ord.ICYDID = Obj.ICYDID
+                                         LEFT JOIN (SELECT ICYDID,
+                                                           Sum(NYSLS) AS nysls,
+                                                           Sum(nyssl) AS nyssl,
+                                                           Sum(nsyl)  AS nsyl
+                                                    FROM   SCYDDX
+                                                    GROUP  BY ICYDID) AS ObjMatier
+                                           ON Ord.ICYDID = ObjMatier.ICYDID
+                                         LEFT JOIN (SELECT Sum(nhjje) AS sum_nhjje_in,
+                                                           Sum(ngjje) AS sum_ngjje_in,
+                                                           Sum(nclje) AS sum_nclje_in,
+                                                           iCydid
+                                                    FROM   TBluey
+                                                    WHERE  iwjg = 0
+                                                           AND lzfbs = 0
+                                                    GROUP  BY iCydid) tb_in
+                                           ON ord.icydid = tb_in.iCydid
+                                         LEFT JOIN (SELECT Cast(Sum(nhjje * 100 / ( 100 + itax )) AS NUMERIC(18, 2)) AS sum_nhjje_out,
+                                                           Cast(Sum(ngjje * 100 / ( 100 + itax )) AS NUMERIC(18, 2)) AS sum_ngjje_out,
+                                                           Cast(Sum(nclje * 100 / ( 100 + itax )) AS NUMERIC(18, 2)) AS sum_nclje_out,
+                                                           iCydid
+                                                    FROM   TBluey
+                                                    WHERE  iwjg = 1
+                                                           AND lzfbs = 0
+                                                    GROUP  BY iCydid) tb_out
+                                           ON ord.icydid = tb_out.iCydid
+                                         LEFT JOIN (SELECT Sum(namount)                                              AS sum_namount,
+                                                           Cast(Sum(nclje * 100 / ( 100 + itax )) AS NUMERIC(18, 2)) AS sum_clje,
+                                                           iCydid,
+                                                           CASE
+                                                             WHEN ldz = 1 THEN 1
+                                                             ELSE 0
+                                                           END                                                       ldz
+                                                    FROM   TJob
+                                                    WHERE  lzfbs = 0
+                                                    GROUP  BY iCydid,
+                                                              nclje,
+                                                              itax,
+                                                              ldz) tj
+                                           ON ord.ICYDID = tj.iCydid
+                                  WHERE  ord.ICYDSTATE > 0
+                                         AND ( CHY = '集团期刊'
+                                                OR CHY = '社会期刊' )) dd
+                          GROUP  BY dd.承印日期) G
+                 ON g.承印时间 = a.承印日期
+               LEFT JOIN (SELECT t.承印日期           承印时间,
+                                 Sum(t.印令)        集团出版社纸令,
+                                 Sum(t.色令)        集团出版社色令,
+                                 Sum(t.不含税销售收入)   集团出版社销售收入,
+                                 Sum(t.不含税销售收入工价) 集团出版社销售工价,
+                                 Sum(t.不含税销售收入料价) 集团出版社销售料价,
+                                 Sum(t.不含税考核计算毛利) 集团出版社销售毛利
+                          FROM   (SELECT CASE
+                                           WHEN Isnull(ldz, 0) = 1 THEN '是'
+                                           ELSE '否'
+                                         END                           登账,
+                                         CONVERT(CHAR(10), DCYRQ, 121) AS 承印日期,
+                                         ObjMatier.nysls               AS 印令,
+                                         ObjMatier.nyssl               AS 色令,
+                                         CYJLX                         AS 印件类型,
+                                         CHY                           AS 活源,
+                                         CASE
+                                           WHEN Isnull(ldz, 0) = 0 THEN( Isnull(nwshjje, 0) - Isnull(nwsbzhjje, 0) )
+                                           ELSE ( Isnull(tj.sum_namount, 0) - ( Isnull(tb_in.sum_ngjje_in, 0) + CASE
+                                                                                                                  WHEN ( Isnull(tj.sum_clje, 0) ) = 0 THEN 0
+                                                                                                                  ELSE ( CASE
+                                                                                                                           WHEN ( Isnull(tb_out.sum_nhjje_out, 0) > ( Isnull(tj.sum_namount, 0) - Isnull(tj.sum_clje, 0) ) * 1.5 ) THEN 0
+                                                                                                                           ELSE ( CASE
+                                                                                                                                    WHEN Isnull(tb_out.sum_nclje_out, 0) > 0 THEN Isnull(tj.sum_clje, 0) - Isnull(tb_out.sum_nclje_out, 0)
+                                                                                                                                    ELSE Isnull(tj.sum_clje, 0)
+                                                                                                                                  END )
+                                                                                                                         END )
+                                                                                                                END ) - Isnull(tb_out.sum_nhjje_out, 0) )
+                                         END                           AS 不含税考核计算毛利,
+                                         CASE
+                                           WHEN Isnull(ldz, 0) = 0 THEN ( Isnull(nwsgjhj, 0) - Isnull(nwsbzgjhj, 0) )
+                                           ELSE Isnull(tj.sum_namount, 0) - Isnull(tj.sum_clje, 0) - Isnull(tb_in.sum_ngjje_in, 0) - Isnull(tb_out.sum_ngjje_out, 0)
+                                         END                           AS 不含税考核计算工价毛利,
+                                         CASE
+                                           WHEN Isnull(ldz, 0) = 0 THEN Isnull(nwshjje, 0)
+                                           ELSE Isnull(tj.sum_namount, 0)
+                                         END                           AS 不含税销售收入,
+                                         CASE
+                                           WHEN Isnull(ldz, 0) = 0 THEN Isnull(nwsgjhj, 0)
+                                           ELSE Isnull(tj.sum_namount, 0) - Isnull(tj.sum_clje, 0)
+                                         END                           AS 不含税销售收入工价,
+                                         CASE
+                                           WHEN Isnull(ldz, 0) = 0 THEN Isnull(nwsclhj, 0)
+                                           ELSE Isnull(tj.sum_clje, 0)
+                                         END                           AS 不含税销售收入料价
+                                  FROM   MCYD Ord
+                                         LEFT JOIN (SELECT ICYDID,
+                                                           Max(Nsc) AS Nsc
+                                                    FROM   SCYDDX
+                                                    WHERE  IDXLXID = 573
+                                                    GROUP  BY ICYDID) AS Obj
+                                           ON ord.ICYDID = Obj.ICYDID
+                                         LEFT JOIN (SELECT ICYDID,
+                                                           Sum(NYSLS) AS nysls,
+                                                           Sum(nyssl) AS nyssl,
+                                                           Sum(nsyl)  AS nsyl
+                                                    FROM   SCYDDX
+                                                    GROUP  BY ICYDID) AS ObjMatier
+                                           ON Ord.ICYDID = ObjMatier.ICYDID
+                                         LEFT JOIN (SELECT Sum(nhjje) AS sum_nhjje_in,
+                                                           Sum(ngjje) AS sum_ngjje_in,
+                                                           Sum(nclje) AS sum_nclje_in,
+                                                           iCydid
+                                                    FROM   TBluey
+                                                    WHERE  iwjg = 0
+                                                           AND lzfbs = 0
+                                                    GROUP  BY iCydid) tb_in
+                                           ON ord.icydid = tb_in.iCydid
+                                         LEFT JOIN (SELECT Cast(Sum(nhjje * 100 / ( 100 + itax )) AS NUMERIC(18, 2)) AS sum_nhjje_out,
+                                                           Cast(Sum(ngjje * 100 / ( 100 + itax )) AS NUMERIC(18, 2)) AS sum_ngjje_out,
+                                                           Cast(Sum(nclje * 100 / ( 100 + itax )) AS NUMERIC(18, 2)) AS sum_nclje_out,
+                                                           iCydid
+                                                    FROM   TBluey
+                                                    WHERE  iwjg = 1
+                                                           AND lzfbs = 0
+                                                    GROUP  BY iCydid) tb_out
+                                           ON ord.icydid = tb_out.iCydid
+                                         LEFT JOIN (SELECT Sum(namount)                                              AS sum_namount,
+                                                           Cast(Sum(nclje * 100 / ( 100 + itax )) AS NUMERIC(18, 2)) AS sum_clje,
+                                                           iCydid,
+                                                           CASE
+                                                             WHEN ldz = 1 THEN 1
+                                                             ELSE 0
+                                                           END                                                       ldz
+                                                    FROM   TJob
+                                                    WHERE  lzfbs = 0
+                                                    GROUP  BY iCydid,
+                                                              nclje,
+                                                              itax,
+                                                              ldz) tj
+                                           ON ord.ICYDID = tj.iCydid
+                                  WHERE  ord.ICYDSTATE > 0
+                                         AND CHY = '集团出版社') t
+                          GROUP  BY T.承印日期) T1
+                 ON T1.承印时间 = a.承印日期
+               LEFT JOIN (SELECT t.承印日期             承印时间,
+                                 Sum(t.印令)          集团教材内纸令,
+                                 Sum(t.色令)          集团教材内色令,
+                                 Sum(t.销售收入不含税)     集团教材内销售收入,
+                                 Sum(t.[销售收入工价不含税]) 集团教材内销售工价,
+                                 Sum(t.[销售收入料价不含税]) 集团教材内销售料价,
+                                 Sum(t.考核计算毛利不含税)   集团教材内销售毛利
+                          FROM   (SELECT CASE
+                                           WHEN Isnull(ldz, 0) = 1 THEN '是'
+                                           ELSE '否'
+                                         END                           登账,
+                                         CONVERT(CHAR(10), DCYRQ, 121) AS 承印日期,
+                                         ObjMatier.nysls               AS 印令,
+                                         ObjMatier.nyssl               AS 色令,
+                                         CYJLX                         AS 印件类型,
+                                         CHY                           AS 活源,
+                                         CASE
+                                           WHEN Isnull(ldz, 0) = 0 THEN( Isnull(nwshjje, 0) - Isnull(nwsbzhjje, 0) )
+                                           ELSE ( Isnull(tj.sum_namount, 0) - ( Isnull(tb_in.sum_ngjje_in, 0) + CASE
+                                                                                                                  WHEN ( Isnull(tj.sum_clje, 0) ) = 0 THEN 0
+                                                                                                                  ELSE ( CASE
+                                                                                                                           WHEN ( Isnull(tb_out.sum_nhjje_out, 0) > ( Isnull(tj.sum_namount, 0) - Isnull(tj.sum_clje, 0) ) * 1.5 ) THEN 0
+                                                                                                                           ELSE ( CASE
+                                                                                                                                    WHEN Isnull(tb_out.sum_nclje_out, 0) > 0 THEN Isnull(tj.sum_clje, 0) - Isnull(tb_out.sum_nclje_out, 0)
+                                                                                                                                    ELSE Isnull(tj.sum_clje, 0)
+                                                                                                                                  END )
+                                                                                                                         END )
+                                                                                                                END ) - Isnull(tb_out.sum_nhjje_out, 0) )
+                                         END                           AS 考核计算毛利不含税,
+                                         CASE
+                                           WHEN Isnull(ldz, 0) = 0 THEN ( Isnull(nwsgjhj, 0) - Isnull(nwsbzgjhj, 0) )
+                                           ELSE Isnull(tj.sum_namount, 0) - Isnull(tj.sum_clje, 0) - Isnull(tb_in.sum_ngjje_in, 0) - Isnull(tb_out.sum_ngjje_out, 0)
+                                         END                           AS 考核计算工价毛利不含税,
+                                         CASE
+                                           WHEN Isnull(ldz, 0) = 0 THEN Isnull(nwshjje, 0)
+                                           ELSE Isnull(tj.sum_namount, 0)
+                                         END                           AS 销售收入不含税,
+                                         CASE
+                                           WHEN Isnull(ldz, 0) = 0 THEN Isnull(nwsgjhj, 0)
+                                           ELSE Isnull(tj.sum_namount, 0) - Isnull(tj.sum_clje, 0)
+                                         END                           AS 销售收入工价不含税,
+                                         CASE
+                                           WHEN Isnull(ldz, 0) = 0 THEN Isnull(nwsclhj, 0)
+                                           ELSE Isnull(tj.sum_clje, 0)
+                                         END                           AS 销售收入料价不含税
+                                  FROM   MCYD Ord
+                                         LEFT JOIN (SELECT ICYDID,
+                                                           Max(Nsc) AS Nsc
+                                                    FROM   SCYDDX
+                                                    WHERE  IDXLXID = 573
+                                                    GROUP  BY ICYDID) AS Obj
+                                           ON ord.ICYDID = Obj.ICYDID
+                                         LEFT JOIN (SELECT ICYDID,
+                                                           Sum(NYSLS) AS nysls,
+                                                           Sum(nyssl) AS nyssl,
+                                                           Sum(nsyl)  AS nsyl
+                                                    FROM   SCYDDX
+                                                    GROUP  BY ICYDID) AS ObjMatier
+                                           ON Ord.ICYDID = ObjMatier.ICYDID
+                                         LEFT JOIN (SELECT Sum(nhjje) AS sum_nhjje_in,
+                                                           Sum(ngjje) AS sum_ngjje_in,
+                                                           Sum(nclje) AS sum_nclje_in,
+                                                           iCydid
+                                                    FROM   TBluey
+                                                    WHERE  iwjg = 0
+                                                           AND lzfbs = 0
+                                                    GROUP  BY iCydid) tb_in
+                                           ON ord.icydid = tb_in.iCydid
+                                         LEFT JOIN (SELECT Cast(Sum(nhjje * 100 / ( 100 + itax )) AS NUMERIC(18, 2)) AS sum_nhjje_out,
+                                                           Cast(Sum(ngjje * 100 / ( 100 + itax )) AS NUMERIC(18, 2)) AS sum_ngjje_out,
+                                                           Cast(Sum(nclje * 100 / ( 100 + itax )) AS NUMERIC(18, 2)) AS sum_nclje_out,
+                                                           iCydid
+                                                    FROM   TBluey
+                                                    WHERE  iwjg = 1
+                                                           AND lzfbs = 0
+                                                    GROUP  BY iCydid) tb_out
+                                           ON ord.icydid = tb_out.iCydid
+                                         LEFT JOIN (SELECT Sum(namount)                                              AS sum_namount,
+                                                           Cast(Sum(nclje * 100 / ( 100 + itax )) AS NUMERIC(18, 2)) AS sum_clje,
+                                                           iCydid,
+                                                           CASE
+                                                             WHEN ldz = 1 THEN 1
+                                                             ELSE 0
+                                                           END                                                       ldz
+                                                    FROM   TJob
+                                                    WHERE  lzfbs = 0
+                                                    GROUP  BY iCydid,
+                                                              nclje,
+                                                              itax,
+                                                              ldz) tj
+                                           ON ord.ICYDID = tj.iCydid
+                                  WHERE  ord.ICYDSTATE > 0
+                                         AND CHY = '集团教材内') t
+                          GROUP  BY T.承印日期) T2
+                 ON T2.承印时间 = a.承印日期
+               LEFT JOIN (SELECT t.承印日期             承印时间,
+                                 Sum(t.印令)          集团教材外纸令,
+                                 Sum(t.色令)          集团教材外色令,
+                                 Sum(t.销售收入不含税)     集团教材外销售收入,
+                                 Sum(t.[销售收入工价不含税]) 集团教材外销售工价,
+                                 Sum(t.[销售收入料价不含税]) 集团教材外销售料价,
+                                 Sum(t.[考核计算毛利不含税]) 集团教材外销售毛利
+                          FROM   (SELECT CASE
+                                           WHEN Isnull(ldz, 0) = 1 THEN '是'
+                                           ELSE '否'
+                                         END                           登账,
+                                         CONVERT(CHAR(10), DCYRQ, 121) AS 承印日期,
+                                         ObjMatier.nysls               AS 印令,
+                                         ObjMatier.nyssl               AS 色令,
+                                         CYJLX                         AS 印件类型,
+                                         CHY                           AS 活源,
+                                         CASE
+                                           WHEN Isnull(ldz, 0) = 0 THEN( Isnull(nwshjje, 0) - Isnull(nwsbzhjje, 0) )
+                                           ELSE ( Isnull(tj.sum_namount, 0) - ( Isnull(tb_in.sum_ngjje_in, 0) + CASE
+                                                                                                                  WHEN ( Isnull(tj.sum_clje, 0) ) = 0 THEN 0
+                                                                                                                  ELSE ( CASE
+                                                                                                                           WHEN ( Isnull(tb_out.sum_nhjje_out, 0) > ( Isnull(tj.sum_namount, 0) - Isnull(tj.sum_clje, 0) ) * 1.5 ) THEN 0
+                                                                                                                           ELSE ( CASE
+                                                                                                                                    WHEN Isnull(tb_out.sum_nclje_out, 0) > 0 THEN Isnull(tj.sum_clje, 0) - Isnull(tb_out.sum_nclje_out, 0)
+                                                                                                                                    ELSE Isnull(tj.sum_clje, 0)
+                                                                                                                                  END )
+                                                                                                                         END )
+                                                                                                                END ) - Isnull(tb_out.sum_nhjje_out, 0) )
+                                         END                           AS 考核计算毛利不含税,
+                                         CASE
+                                           WHEN Isnull(ldz, 0) = 0 THEN ( Isnull(nwsgjhj, 0) - Isnull(nwsbzgjhj, 0) )
+                                           ELSE Isnull(tj.sum_namount, 0) - Isnull(tj.sum_clje, 0) - Isnull(tb_in.sum_ngjje_in, 0) - Isnull(tb_out.sum_ngjje_out, 0)
+                                         END                           AS 考核计算工价毛利不含税,
+                                         CASE
+                                           WHEN Isnull(ldz, 0) = 0 THEN Isnull(nwshjje, 0)
+                                           ELSE Isnull(tj.sum_namount, 0)
+                                         END                           AS 销售收入不含税,
+                                         CASE
+                                           WHEN Isnull(ldz, 0) = 0 THEN Isnull(nwsgjhj, 0)
+                                           ELSE Isnull(tj.sum_namount, 0) - Isnull(tj.sum_clje, 0)
+                                         END                           AS 销售收入工价不含税,
+                                         CASE
+                                           WHEN Isnull(ldz, 0) = 0 THEN Isnull(nwsclhj, 0)
+                                           ELSE Isnull(tj.sum_clje, 0)
+                                         END                           AS 销售收入料价不含税
+                                  FROM   MCYD Ord
+                                         LEFT JOIN (SELECT ICYDID,
+                                                           Max(Nsc) AS Nsc
+                                                    FROM   SCYDDX
+                                                    WHERE  IDXLXID = 573
+                                                    GROUP  BY ICYDID) AS Obj
+                                           ON ord.ICYDID = Obj.ICYDID
+                                         LEFT JOIN (SELECT ICYDID,
+                                                           Sum(NYSLS) AS nysls,
+                                                           Sum(nyssl) AS nyssl,
+                                                           Sum(nsyl)  AS nsyl
+                                                    FROM   SCYDDX
+                                                    GROUP  BY ICYDID) AS ObjMatier
+                                           ON Ord.ICYDID = ObjMatier.ICYDID
+                                         LEFT JOIN (SELECT Sum(nhjje) AS sum_nhjje_in,
+                                                           Sum(ngjje) AS sum_ngjje_in,
+                                                           Sum(nclje) AS sum_nclje_in,
+                                                           iCydid
+                                                    FROM   TBluey
+                                                    WHERE  iwjg = 0
+                                                           AND lzfbs = 0
+                                                    GROUP  BY iCydid) tb_in
+                                           ON ord.icydid = tb_in.iCydid
+                                         LEFT JOIN (SELECT Cast(Sum(nhjje * 100 / ( 100 + itax )) AS NUMERIC(18, 2)) AS sum_nhjje_out,
+                                                           Cast(Sum(ngjje * 100 / ( 100 + itax )) AS NUMERIC(18, 2)) AS sum_ngjje_out,
+                                                           Cast(Sum(nclje * 100 / ( 100 + itax )) AS NUMERIC(18, 2)) AS sum_nclje_out,
+                                                           iCydid
+                                                    FROM   TBluey
+                                                    WHERE  iwjg = 1
+                                                           AND lzfbs = 0
+                                                    GROUP  BY iCydid) tb_out
+                                           ON ord.icydid = tb_out.iCydid
+                                         LEFT JOIN (SELECT Sum(namount)                                              AS sum_namount,
+                                                           Cast(Sum(nclje * 100 / ( 100 + itax )) AS NUMERIC(18, 2)) AS sum_clje,
+                                                           iCydid,
+                                                           CASE
+                                                             WHEN ldz = 1 THEN 1
+                                                             ELSE 0
+                                                           END                                                       ldz
+                                                    FROM   TJob
+                                                    WHERE  lzfbs = 0
+                                                    GROUP  BY iCydid,
+                                                              nclje,
+                                                              itax,
+                                                              ldz) tj
+                                           ON ord.ICYDID = tj.iCydid
+                                  WHERE  ord.ICYDSTATE > 0
+                                         AND CHY = '集团教材外') t
+                          GROUP  BY T.承印日期) T3
+                 ON T3.承印时间 = a.承印日期
+               LEFT JOIN (SELECT t.承印日期             承印时间,
+                                 Sum(t.印令)          外贸订单纸令,
+                                 Sum(t.色令)          外贸订单色令,
+                                 Sum(t.销售收入不含税)     外贸订单销售收入,
+                                 Sum(t.[销售收入工价不含税]) 外贸订单销售工价,
+                                 Sum(t.[销售收入料价不含税]) 外贸订单销售料价,
+                                 Sum(t.[考核计算毛利不含税]) 外贸订单销售毛利
+                          FROM   (SELECT CASE
+                                           WHEN Isnull(ldz, 0) = 1 THEN '是'
+                                           ELSE '否'
+                                         END                           登账,
+                                         CONVERT(CHAR(10), DCYRQ, 121) AS 承印日期,
+                                         ObjMatier.nysls               AS 印令,
+                                         ObjMatier.nyssl               AS 色令,
+                                         CYJLX                         AS 印件类型,
+                                         CHY                           AS 活源,
+                                         CASE
+                                           WHEN Isnull(ldz, 0) = 0 THEN( Isnull(nwshjje, 0) - Isnull(nwsbzhjje, 0) )
+                                           ELSE ( Isnull(tj.sum_namount, 0) - ( Isnull(tb_in.sum_ngjje_in, 0) + CASE
+                                                                                                                  WHEN ( Isnull(tj.sum_clje, 0) ) = 0 THEN 0
+                                                                                                                  ELSE ( CASE
+                                                                                                                           WHEN ( Isnull(tb_out.sum_nhjje_out, 0) > ( Isnull(tj.sum_namount, 0) - Isnull(tj.sum_clje, 0) ) * 1.5 ) THEN 0
+                                                                                                                           ELSE ( CASE
+                                                                                                                                    WHEN Isnull(tb_out.sum_nclje_out, 0) > 0 THEN Isnull(tj.sum_clje, 0) - Isnull(tb_out.sum_nclje_out, 0)
+                                                                                                                                    ELSE Isnull(tj.sum_clje, 0)
+                                                                                                                                  END )
+                                                                                                                         END )
+                                                                                                                END ) - Isnull(tb_out.sum_nhjje_out, 0) )
+                                         END                           AS 考核计算毛利不含税,
+                                         CASE
+                                           WHEN Isnull(ldz, 0) = 0 THEN ( Isnull(nwsgjhj, 0) - Isnull(nwsbzgjhj, 0) )
+                                           ELSE Isnull(tj.sum_namount, 0) - Isnull(tj.sum_clje, 0) - Isnull(tb_in.sum_ngjje_in, 0) - Isnull(tb_out.sum_ngjje_out, 0)
+                                         END                           AS 考核计算工价毛利不含税,
+                                         CASE
+                                           WHEN Isnull(ldz, 0) = 0 THEN Isnull(nwshjje, 0)
+                                           ELSE Isnull(tj.sum_namount, 0)
+                                         END                           AS 销售收入不含税,
+                                         CASE
+                                           WHEN Isnull(ldz, 0) = 0 THEN Isnull(nwsgjhj, 0)
+                                           ELSE Isnull(tj.sum_namount, 0) - Isnull(tj.sum_clje, 0)
+                                         END                           AS 销售收入工价不含税,
+                                         CASE
+                                           WHEN Isnull(ldz, 0) = 0 THEN Isnull(nwsclhj, 0)
+                                           ELSE Isnull(tj.sum_clje, 0)
+                                         END                           AS 销售收入料价不含税
+                                  FROM   MCYD Ord
+                                         LEFT JOIN (SELECT ICYDID,
+                                                           Max(Nsc) AS Nsc
+                                                    FROM   SCYDDX
+                                                    WHERE  IDXLXID = 573
+                                                    GROUP  BY ICYDID) AS Obj
+                                           ON ord.ICYDID = Obj.ICYDID
+                                         LEFT JOIN (SELECT ICYDID,
+                                                           Sum(NYSLS) AS nysls,
+                                                           Sum(nyssl) AS nyssl,
+                                                           Sum(nsyl)  AS nsyl
+                                                    FROM   SCYDDX
+                                                    GROUP  BY ICYDID) AS ObjMatier
+                                           ON Ord.ICYDID = ObjMatier.ICYDID
+                                         LEFT JOIN (SELECT Sum(nhjje) AS sum_nhjje_in,
+                                                           Sum(ngjje) AS sum_ngjje_in,
+                                                           Sum(nclje) AS sum_nclje_in,
+                                                           iCydid
+                                                    FROM   TBluey
+                                                    WHERE  iwjg = 0
+                                                           AND lzfbs = 0
+                                                    GROUP  BY iCydid) tb_in
+                                           ON ord.icydid = tb_in.iCydid
+                                         LEFT JOIN (SELECT Cast(Sum(nhjje * 100 / ( 100 + itax )) AS NUMERIC(18, 2)) AS sum_nhjje_out,
+                                                           Cast(Sum(ngjje * 100 / ( 100 + itax )) AS NUMERIC(18, 2)) AS sum_ngjje_out,
+                                                           Cast(Sum(nclje * 100 / ( 100 + itax )) AS NUMERIC(18, 2)) AS sum_nclje_out,
+                                                           iCydid
+                                                    FROM   TBluey
+                                                    WHERE  iwjg = 1
+                                                           AND lzfbs = 0
+                                                    GROUP  BY iCydid) tb_out
+                                           ON ord.icydid = tb_out.iCydid
+                                         LEFT JOIN (SELECT Sum(namount)                                              AS sum_namount,
+                                                           Cast(Sum(nclje * 100 / ( 100 + itax )) AS NUMERIC(18, 2)) AS sum_clje,
+                                                           iCydid,
+                                                           CASE
+                                                             WHEN ldz = 1 THEN 1
+                                                             ELSE 0
+                                                           END                                                       ldz
+                                                    FROM   TJob
+                                                    WHERE  lzfbs = 0
+                                                    GROUP  BY iCydid,
+                                                              nclje,
+                                                              itax,
+                                                              ldz) tj
+                                           ON ord.ICYDID = tj.iCydid
+                                  WHERE  ord.ICYDSTATE > 0
+                                         AND CHY = '外贸订单') t
+                          GROUP  BY T.承印日期) T4
+                 ON T4.承印时间 = a.承印日期
+               LEFT JOIN (SELECT t.承印日期             承印时间,
+                                 Sum(t.印令)          总纸令,
+                                 Sum(t.色令)          总色令,
+                                 Sum(t.销售收入不含税)     总销售收入,
+                                 Sum(t.[销售收入工价不含税]) 总销售工价,
+                                 Sum(t.[销售收入料价不含税]) 总销售料价,
+                                 Sum(t.[考核计算毛利不含税]) 总销售毛利
+                          FROM   (SELECT CASE
+                                           WHEN Isnull(ldz, 0) = 1 THEN '是'
+                                           ELSE '否'
+                                         END                           登账,
+                                         CONVERT(CHAR(10), DCYRQ, 121) AS 承印日期,
+                                         ObjMatier.nysls               AS 印令,
+                                         ObjMatier.nyssl               AS 色令,
+                                         CYJLX                         AS 印件类型,
+                                         CHY                           AS 活源,
+                                         CASE
+                                           WHEN Isnull(ldz, 0) = 0 THEN( Isnull(nwshjje, 0) - Isnull(nwsbzhjje, 0) )
+                                           ELSE ( Isnull(tj.sum_namount, 0) - ( Isnull(tb_in.sum_ngjje_in, 0) + CASE
+                                                                                                                  WHEN ( Isnull(tj.sum_clje, 0) ) = 0 THEN 0
+                                                                                                                  ELSE ( CASE
+                                                                                                                           WHEN ( Isnull(tb_out.sum_nhjje_out, 0) > ( Isnull(tj.sum_namount, 0) - Isnull(tj.sum_clje, 0) ) * 1.5 ) THEN 0
+                                                                                                                           ELSE ( CASE
+                                                                                                                                    WHEN Isnull(tb_out.sum_nclje_out, 0) > 0 THEN Isnull(tj.sum_clje, 0) - Isnull(tb_out.sum_nclje_out, 0)
+                                                                                                                                    ELSE Isnull(tj.sum_clje, 0)
+                                                                                                                                  END )
+                                                                                                                         END )
+                                                                                                                END ) - Isnull(tb_out.sum_nhjje_out, 0) )
+                                         END                           AS 考核计算毛利不含税,
+                                         CASE
+                                           WHEN Isnull(ldz, 0) = 0 THEN ( Isnull(nwsgjhj, 0) - Isnull(nwsbzgjhj, 0) )
+                                           ELSE Isnull(tj.sum_namount, 0) - Isnull(tj.sum_clje, 0) - Isnull(tb_in.sum_ngjje_in, 0) - Isnull(tb_out.sum_ngjje_out, 0)
+                                         END                           AS 考核计算工价毛利不含税,
+                                         CASE
+                                           WHEN Isnull(ldz, 0) = 0 THEN Isnull(nwshjje, 0)
+                                           ELSE Isnull(tj.sum_namount, 0)
+                                         END                           AS 销售收入不含税,
+                                         CASE
+                                           WHEN Isnull(ldz, 0) = 0 THEN Isnull(nwsgjhj, 0)
+                                           ELSE Isnull(tj.sum_namount, 0) - Isnull(tj.sum_clje, 0)
+                                         END                           AS 销售收入工价不含税,
+                                         CASE
+                                           WHEN Isnull(ldz, 0) = 0 THEN Isnull(nwsclhj, 0)
+                                           ELSE Isnull(tj.sum_clje, 0)
+                                         END                           AS 销售收入料价不含税
+                                  FROM   MCYD Ord
+                                         LEFT JOIN (SELECT ICYDID,
+                                                           Max(Nsc) AS Nsc
+                                                    FROM   SCYDDX
+                                                    WHERE  IDXLXID = 573
+                                                    GROUP  BY ICYDID) AS Obj
+                                           ON ord.ICYDID = Obj.ICYDID
+                                         LEFT JOIN (SELECT ICYDID,
+                                                           Sum(NYSLS) AS nysls,
+                                                           Sum(nyssl) AS nyssl,
+                                                           Sum(nsyl)  AS nsyl
+                                                    FROM   SCYDDX
+                                                    GROUP  BY ICYDID) AS ObjMatier
+                                           ON Ord.ICYDID = ObjMatier.ICYDID
+                                         LEFT JOIN (SELECT Sum(nhjje) AS sum_nhjje_in,
+                                                           Sum(ngjje) AS sum_ngjje_in,
+                                                           Sum(nclje) AS sum_nclje_in,
+                                                           iCydid
+                                                    FROM   TBluey
+                                                    WHERE  iwjg = 0
+                                                           AND lzfbs = 0
+                                                    GROUP  BY iCydid) tb_in
+                                           ON ord.icydid = tb_in.iCydid
+                                         LEFT JOIN (SELECT Cast(Sum(nhjje * 100 / ( 100 + itax )) AS NUMERIC(18, 2)) AS sum_nhjje_out,
+                                                           Cast(Sum(ngjje * 100 / ( 100 + itax )) AS NUMERIC(18, 2)) AS sum_ngjje_out,
+                                                           Cast(Sum(nclje * 100 / ( 100 + itax )) AS NUMERIC(18, 2)) AS sum_nclje_out,
+                                                           iCydid
+                                                    FROM   TBluey
+                                                    WHERE  iwjg = 1
+                                                           AND lzfbs = 0
+                                                    GROUP  BY iCydid) tb_out
+                                           ON ord.icydid = tb_out.iCydid
+                                         LEFT JOIN (SELECT Sum(namount)                                              AS sum_namount,
+                                                           Cast(Sum(nclje * 100 / ( 100 + itax )) AS NUMERIC(18, 2)) AS sum_clje,
+                                                           iCydid,
+                                                           CASE
+                                                             WHEN ldz = 1 THEN 1
+                                                             ELSE 0
+                                                           END                                                       ldz
+                                                    FROM   TJob
+                                                    WHERE  lzfbs = 0
+                                                    GROUP  BY iCydid,
+                                                              nclje,
+                                                              itax,
+                                                              ldz) tj
+                                           ON ord.ICYDID = tj.iCydid
+                                  WHERE  ord.ICYDSTATE > 0) t
+                          GROUP  BY T.承印日期) T5
+                 ON T5.承印时间 = a.承印日期)db
+WHERE  db.日期 >= @BeginDate
+       AND db.日期 <= @EndDate 

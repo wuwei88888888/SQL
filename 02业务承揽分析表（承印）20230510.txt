@@ -1,0 +1,243 @@
+SELECT {BDate}                                               AS 提交起始日期,
+       {EDate}                                               AS 提交结束日期,
+       m.DCYRQ                                               AS 提交日期,
+       Isnull(m.nzl, 0.000)                                  AS 今年纸令,
+       Isnull(n.nzl, 0.000)                                  AS 上年纸令,
+       CASE
+         WHEN n.nzl > 0 THEN ( Isnull(m.nzl, 0.000) / n.nzl - 1 )
+         WHEN Isnull(n.nzl, 0.000) = 0.000
+              AND m.nzl > 0 THEN 1
+         ELSE 0
+       END                                                   AS 纸令同期增幅,
+       Isnull(m.nzl, 0.000) - Isnull(n.nzl, 0.000)           AS 纸令同期增减,
+       Isnull(m.nsl, 0.000)                                  AS 今年色令,
+       Isnull(n.nsl, 0.000)                                  AS 上年色令,
+       CASE
+         WHEN n.nsl > 0 THEN ( Isnull(m.nsl, 0.000) / n.nsl - 1 )
+         WHEN Isnull(n.nsl, 0.000) = 0.000
+              AND m.nsl > 0 THEN 1
+         ELSE 0
+       END                                                   AS 色令同期增幅,
+       Isnull(m.nsl, 0.000) - Isnull(n.nsl, 0.000)           AS 色令增减,
+       CASE
+         WHEN m.nzl > 0 THEN ( Isnull(m.nsl, 0.000) / m.nzl )
+         WHEN Isnull(m.nzl, 0.000) = 0.000
+              AND m.nsl > 0 THEN 1
+         ELSE 0
+       END                                                   AS 今年色令与纸令比值,
+       CASE
+         WHEN n.nzl > 0 THEN ( Isnull(n.nsl, 0.000) / n.nzl )
+         WHEN Isnull(n.nzl, 0.000) = 0.000
+              AND n.nsl > 0 THEN 1
+         ELSE 0
+       END                                                   AS 上年色令与纸令比值,
+       Isnull(m.ncs, 0.000)                                  AS 今年册数,
+       Isnull(n.ncs, 0.000)                                  AS 上年册数,
+       CASE
+         WHEN n.ncs > 0 THEN ( Isnull(m.ncs, 0.000) / n.ncs - 1 )
+         WHEN Isnull(n.ncs, 0.000) = 0.000
+              AND m.ncs > 0 THEN 1
+         ELSE 0
+       END                                                   AS 册数同期增幅,
+       Isnull(m.ncs, 0.000) - Isnull(n.ncs, 0.000)           AS 册数同期增减,
+       CASE
+         WHEN m.nzl > 0 THEN ( Isnull(m.ncs, 0.000) / m.nzl )
+         WHEN Isnull(m.nzl, 0.000) = 0.000
+              AND m.ncs > 0 THEN 1
+         ELSE 0
+       END                                                   AS 今年册数与纸令比值,
+       CASE
+         WHEN n.nzl > 0 THEN ( Isnull(n.ncs, 0.000) / n.nzl )
+         WHEN Isnull(n.nzl, 0.000) = 0.000
+              AND n.ncs > 0 THEN 1
+         ELSE 0
+       END                                                   AS 上年册数与纸令比值,
+       Isnull(m.ncyjg, 0.00)                                 AS 合同价格,
+       Isnull(n.ncyjg, 0.00)                                 AS 上年合同价格,
+       CASE
+         WHEN n.ncyjg > 0 THEN ( Isnull(m.ncyjg, 0.00) / n.ncyjg - 1 )
+         WHEN Isnull(n.ncyjg, 0.00) = 0.00
+              AND m.ncyjg > 0 THEN 1
+         ELSE 0
+       END                                                   AS 合同价格同期比,
+       Isnull(m.ncyjg, 0.00) - Isnull(n.ncyjg, 0.00)         AS 合同金额对比,
+       Isnull(m.nwsgjhj, 0.00)                               AS 合同工价,
+       Isnull(n.nwsgjhj, 0.00)                               AS 上年合同工价,
+       Isnull(m.nwsgjhj, 0.00) - Isnull(n.nwsgjhj, 0.00)     AS 合同工价对比,
+       Isnull(m.NWSCLHJ, 0.00)                               AS 合同料价,
+       Isnull(n.NWSCLHJ, 0.00)                               AS 上年合同料价,
+       Isnull(m.NWSCLHJ, 0.00) - Isnull(n.NWSCLHJ, 0.00)     AS 合同料价对比,
+       Isnull(m.nbzhjje, 0.00)                               AS 标准价,
+       Isnull(n. nbzhjje, 0.00)                              AS 上年标准价,
+       Isnull(m. nbzhjje, 0.00) - Isnull(n. nbzhjje, 0.00)   AS 标准价对比,
+       Isnull(m.NWSBZCLHJ, 0.00)                             AS 标准料价,
+       Isnull(n.NWSBZCLHJ, 0.00)                             AS 上年标准料价,
+       Isnull(m.NWSBZCLHJ, 0.00) - Isnull(n.NWSBZCLHJ, 0.00) AS 标准料价对比,
+       Isnull(m.NWSBZGJHJ, 0.00)                             AS 标准工价,
+       Isnull(n.NWSBZGJHJ, 0.00)                             AS 上年标准工价,
+       Isnull(m.NWSBZGJHJ, 0.00) - Isnull(n.NWSBZGJHJ, 0.00) AS 标准工价对比,
+       Isnull(m.NGJJE, 0.00)                                 AS 加工收入,
+       Isnull(m.nscml, 0.00)                                 AS 生产毛利不含税,
+       Isnull(n.nscml, 0.00)                                 AS 上年生产毛利不含税,
+       Isnull(m.nscml, 0.00) - Isnull(n.nscml, 0.00)         AS 生产毛利对比,
+       Isnull(m.nml, 0.00)                                   AS 采购毛利不含税,
+       Isnull(n.nml, 0.00)                                   AS 上年采购毛利不含税,
+       Isnull(m.nml, 0.00) - Isnull(n.nml, 0.00)             AS 采购毛利对比
+FROM   (SELECT 1                            AS rownumber,
+               c.DCYRQ,
+               Sum(c.ncs)                   AS ncs,
+               Sum(c.nzl)                   AS nzl,
+               Sum(c.nsl)                   AS nsl,
+               Sum(c. nwshjje)              AS ncyjg,
+               Sum(c.nwsgjhj)               AS nwsgjhj,
+               Sum(c.NWSCLHJ)               AS NWSCLHJ,
+               Sum(c. nwsbzhjje)            AS nbzhjje,
+               Sum(c.NWSBZCLHJ)             AS NWSBZCLHJ,
+               Sum(c.NWSBZGJHJ)             AS NWSBZGJHJ,
+               Sum(c.NGJJE)                 AS NGJJE,
+               Sum(c.nscml)                 AS nscml,
+               Sum(c.nwshjje - c.nwsbzhjje) AS nml
+        FROM   (SELECT A.chy                                                      AS chy,
+                       Datename(YEAR, a.DCYRQ)                                    dateyear,
+                       A.CYWYXM                                                   AS cywyxm,
+                       A.CYWDWMC                                                  AS CYWDWMC,
+                       A.NCS                                                      AS ncs,
+                       Isnull(A.nwsgjhj, 0.00)                                    AS nwsgjhj,
+                       Isnull(A.NWSCLHJ, 0.00)                                    AS NWSCLHJ,
+                       Isnull(A.NWSBZCLHJ, 0.00)                                  AS NWSBZCLHJ,
+                       Isnull(A.NWSBZGJHJ, 0.00)                                  AS NWSBZGJHJ,
+                       A.NGJJE                                                    AS ngjje,
+                       Isnull(A.nwshjje, 0.00)                                    AS nwshjje,
+                       Isnull(A.nwsbzhjje, 0.00)                                  AS nwsbzhjje,
+                       tj.sum_namount - tb_in.sum_nhjje_in - tb_out.sum_nhjje_out AS nscml,
+                       Datename(YEAR, A.DCYRQ)                                    AS DCYRQ,
+                       Isnull(ObjMatier.nysls, 0.000)                             AS nzl,
+                       Isnull(ObjMatier.nyssl, 0.000)                             AS nsl,
+                       A.ICYDSTATE,
+                       A.ICYDID
+                FROM   MCYD A
+                       LEFT JOIN (SELECT ICYDID,
+                                         Max(Nsc) AS Nsc
+                                  FROM   SCYDDX
+                                  WHERE  IDXLXID = 573
+                                  GROUP  BY ICYDID) AS Obj
+                         ON A.ICYDID = Obj.ICYDID
+                       LEFT JOIN (SELECT ICYDID,
+                                         Sum(NYSLS) AS nysls,
+                                         Sum(nyssl) AS nyssl,
+                                         Sum(nsyl)  AS nsyl
+                                  FROM   SCYDDX
+                                  GROUP  BY ICYDID) AS ObjMatier
+                         ON A.ICYDID = ObjMatier.ICYDID
+                       LEFT JOIN (SELECT Sum(nhjje) AS sum_nhjje_in,
+                                         Sum(ngjje) AS sum_ngjje_in,
+                                         Sum(nclje) AS sum_nclje_in,
+                                         iCydid
+                                  FROM   TBluey
+                                  WHERE  iwjg = 0
+                                         AND lzfbs = 0
+                                  GROUP  BY iCydid) tb_in
+                         ON A.icydid = tb_in.iCydid
+                       LEFT JOIN (SELECT Cast(Sum(nhjje * 100 / ( 100 + itax )) AS NUMERIC(18, 2)) AS sum_nhjje_out,
+                                         Cast(Sum(ngjje * 100 / ( 100 + itax )) AS NUMERIC(18, 2)) AS sum_ngjje_out,
+                                         Cast(Sum(nclje * 100 / ( 100 + itax )) AS NUMERIC(18, 2)) AS sum_nclje_out,
+                                         iCydid
+                                  FROM   TBluey
+                                  WHERE  iwjg = 1
+                                         AND lzfbs = 0
+                                  GROUP  BY iCydid) tb_out
+                         ON A.icydid = tb_out.iCydid
+                       LEFT JOIN (SELECT Sum(namount)                                              AS sum_namount,
+                                         Cast(Sum(nclje * 100 / ( 100 + itax )) AS NUMERIC(18, 2)) AS sum_clje,
+                                         iCydid
+                                  FROM   TJob
+                                  WHERE  lzfbs = 0
+                                  GROUP  BY iCydid,
+                                            nclje,
+                                            itax) tj
+                         ON A.ICYDID = tj.iCydid
+                WHERE  A.ICYDSTATE > 0
+                       AND A.ICYDID > 0
+                       AND CONVERT(VARCHAR(10), A.DCYRQ, 120) >= {BDate}
+                       AND CONVERT(VARCHAR(10), A.DCYRQ, 120) <= {EDate}) c
+        GROUP  BY c.DCYRQ) m
+       FULL OUTER JOIN (SELECT 1                            AS rownumber,
+                               c.DCYRQ,
+                               Sum(c.ncs)                   AS ncs,
+                               Sum(c.nzl)                   AS nzl,
+                               Sum(c.nsl)                   AS nsl,
+                               Sum(c. nwshjje)              AS ncyjg,
+                               Sum(c.nwsgjhj)               AS nwsgjhj,
+                               Sum(c.NWSCLHJ)               AS NWSCLHJ,
+                               Sum(c. nwsbzhjje)            AS nbzhjje,
+                               Sum(c.NWSBZCLHJ)             AS NWSBZCLHJ,
+                               Sum(c.NWSBZGJHJ)             AS NWSBZGJHJ,
+                               Sum(c.NGJJE)                 AS NGJJE,
+                               Sum(c.nscml)                 AS nscml,
+                               Sum(c.nwshjje - c.nwsbzhjje) AS nml
+                        FROM   (SELECT A.chy                                                      AS chy,
+                                       Datename(YEAR, a.DCYRQ)                                    dateyear,
+                                       A.CYWYXM                                                   AS cywyxm,
+                                       A.CYWDWMC                                                  AS CYWDWMC,
+                                       A.NCS                                                      AS ncs,
+                                       Isnull(A.nwsgjhj, 0.00)                                    AS nwsgjhj,
+                                       Isnull(A.NWSCLHJ, 0.00)                                    AS NWSCLHJ,
+                                       Isnull(A.NWSBZCLHJ, 0.00)                                  AS NWSBZCLHJ,
+                                       Isnull(A.NWSBZGJHJ, 0.00)                                  AS NWSBZGJHJ,
+                                       A.NGJJE                                                    AS ngjje,
+                                       Isnull(A.nwshjje, 0.00)                                    AS nwshjje,
+                                       Isnull(A.nwsbzhjje, 0.00)                                  AS nwsbzhjje,
+                                       tj.sum_namount - tb_in.sum_nhjje_in - tb_out.sum_nhjje_out AS nscml,
+                                       Datename(YEAR, A.DCYRQ)                                    AS DCYRQ,
+                                       Isnull(ObjMatier.nysls, 0.000)                             AS nzl,
+                                       Isnull(ObjMatier.nyssl, 0.000)                             AS nsl,
+                                       A.ICYDSTATE,
+                                       A.ICYDID
+                                FROM   MCYD A
+                                       LEFT JOIN (SELECT ICYDID,
+                                                         Max(Nsc) AS Nsc
+                                                  FROM   SCYDDX
+                                                  WHERE  IDXLXID = 573
+                                                  GROUP  BY ICYDID) AS Obj
+                                         ON A.ICYDID = Obj.ICYDID
+                                       LEFT JOIN (SELECT ICYDID,
+                                                         Sum(NYSLS) AS nysls,
+                                                         Sum(nyssl) AS nyssl,
+                                                         Sum(nsyl)  AS nsyl
+                                                  FROM   SCYDDX
+                                                  GROUP  BY ICYDID) AS ObjMatier
+                                         ON A.ICYDID = ObjMatier.ICYDID
+                                       LEFT JOIN (SELECT Sum(nhjje) AS sum_nhjje_in,
+                                                         Sum(ngjje) AS sum_ngjje_in,
+                                                         Sum(nclje) AS sum_nclje_in,
+                                                         iCydid
+                                                  FROM   TBluey
+                                                  WHERE  iwjg = 0
+                                                         AND lzfbs = 0
+                                                  GROUP  BY iCydid) tb_in
+                                         ON A.icydid = tb_in.iCydid
+                                       LEFT JOIN (SELECT Cast(Sum(nhjje * 100 / ( 100 + itax )) AS NUMERIC(18, 2)) AS sum_nhjje_out,
+                                                         Cast(Sum(ngjje * 100 / ( 100 + itax )) AS NUMERIC(18, 2)) AS sum_ngjje_out,
+                                                         Cast(Sum(nclje * 100 / ( 100 + itax )) AS NUMERIC(18, 2)) AS sum_nclje_out,
+                                                         iCydid
+                                                  FROM   TBluey
+                                                  WHERE  iwjg = 1
+                                                         AND lzfbs = 0
+                                                  GROUP  BY iCydid) tb_out
+                                         ON A.icydid = tb_out.iCydid
+                                       LEFT JOIN (SELECT Sum(namount)                                              AS sum_namount,
+                                                         Cast(Sum(nclje * 100 / ( 100 + itax )) AS NUMERIC(18, 2)) AS sum_clje,
+                                                         iCydid
+                                                  FROM   TJob
+                                                  WHERE  lzfbs = 0
+                                                  GROUP  BY iCydid,
+                                                            nclje,
+                                                            itax) tj
+                                         ON A.ICYDID = tj.iCydid
+                                WHERE  A.ICYDSTATE > 0
+                                       AND A.ICYDID > 0
+                                       AND CONVERT(VARCHAR(10), Dateadd(YEAR, 1, A.DCYRQ), 120) >= {BDate}
+                                       AND CONVERT(VARCHAR(10), Dateadd(YEAR, 1, A.DCYRQ), 120) <= {EDate}) c
+                        GROUP  BY c.DCYRQ) n
+         ON n.rownumber = m.rownumber
+WHERE  1 = 1 /*Wheres*/

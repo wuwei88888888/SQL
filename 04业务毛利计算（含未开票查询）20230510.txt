@@ -1,0 +1,368 @@
+SELECT CASE
+         WHEN Isnull(ldz, 0) = 1 THEN '是'
+         ELSE '否'
+       END                                                                登账,
+       CONVERT(CHAR(10), DCYRQ, 121)                                      AS 承印日期,
+       CCYDH                                                              AS 订单号,
+       CYJMC                                                              AS 印件名称,
+       CYWDWMC                                                            AS 业务单位,
+       cyjlx                                                              印件类型,
+       chy                                                                活源,
+       NCS                                                                AS 印数,
+       CZWKB                                                              AS 开本,
+       CDF                                                                AS 订法,
+       NZWYZ                                                              AS 正文印张,
+       ( CASE
+           WHEN NCS = 0 THEN 0
+           ELSE ObjMatier.nysls
+         END )                                                            AS 印令,
+       ( CASE
+           WHEN NCS = 0 THEN 0
+           ELSE ObjMatier.nyssl
+         END )                                                            AS 色令,
+       Obj.Nsc                                                            内文色数,
+       cbz                                                                发外备注,
+       CASE
+         WHEN Isnull(ldz, 0) = 0 THEN( Isnull(nwshjje, 0) - Isnull(nwsbzhjje, 0) )
+         ELSE
+           CASE
+             WHEN Isnull(tb_in.sum_ngjje_in, 0) + CASE
+                                                    WHEN ( Isnull(tj.sum_clje, 0) ) = 0 THEN 0
+                                                    ELSE ( CASE
+                                                             WHEN ( Isnull(tb_out.sum_nhjje_out, 0) > ( Isnull(tj.sum_namount, 0) - Isnull(tj.sum_clje, 0) ) * 1.5 ) THEN 0
+                                                             ELSE ( CASE
+                                                                      WHEN Isnull(tb_out.sum_nclje_out, 0) > 0 THEN Isnull(tj.sum_clje, 0) - Isnull(tb_out.sum_nclje_out, 0)
+                                                                      ELSE Isnull(tj.sum_clje, 0)
+                                                                    END )
+                                                           END )
+                                                  END = 0
+                  AND Isnull(tb_out.sum_nhjje_out, 0) = 0 THEN 0
+             ELSE Isnull(tj.sum_namount, 0) - ( Isnull(tb_in.sum_ngjje_in, 0) + CASE
+                                                                                  WHEN ( Isnull(tj.sum_clje, 0) ) = 0 THEN 0
+                                                                                  ELSE ( CASE
+                                                                                           WHEN ( Isnull(tb_out.sum_nhjje_out, 0) > ( Isnull(tj.sum_namount, 0) - Isnull(tj.sum_clje, 0) ) * 1.5 ) THEN 0
+                                                                                           ELSE ( CASE
+                                                                                                    WHEN Isnull(tb_out.sum_nclje_out, 0) > 0 THEN Isnull(tj.sum_clje, 0) - Isnull(tb_out.sum_nclje_out, 0)
+                                                                                                    ELSE Isnull(tj.sum_clje, 0)
+                                                                                                  END )
+                                                                                         END )
+                                                                                END ) - Isnull(tb_out.sum_nhjje_out, 0)
+           END
+       END                                                                AS "考核计算毛利(不含税)",
+       CASE
+         WHEN Isnull(ldz, 0) = 0 THEN ( Isnull(nwsgjhj, 0) - Isnull(nwsbzgjhj, 0) )
+         ELSE
+           CASE
+             WHEN Isnull(tb_in.sum_ngjje_in, 0) = 0
+                  AND Isnull(tb_out.sum_ngjje_out, 0) = 0 THEN 0
+             ELSE Isnull(tj.sum_namount, 0) - Isnull(tj.sum_clje, 0) - Isnull(tb_in.sum_ngjje_in, 0) - Isnull(tb_out.sum_ngjje_out, 0)
+           END
+       END                                                                AS "考核计算工价毛利(不含税)",
+       ( CASE
+           WHEN Isnull(ldz, 0) = 0 THEN( Isnull(nwsclhj, 0) - Isnull(nwsbzclhj, 0) )
+           ELSE ( Isnull(tj.sum_clje, 0) - ( CASE
+                                               WHEN ( Isnull(tj.sum_clje, 0) ) = 0 THEN 0
+                                               ELSE ( CASE
+                                                        WHEN ( Isnull(tb_out.sum_nhjje_out, 0) > ( Isnull(tj.sum_namount, 0) - Isnull(tj.sum_clje, 0) ) * 1.5 ) THEN 0
+                                                        ELSE ( CASE
+                                                                 WHEN Isnull(tb_out.sum_nclje_out, 0) > 0 THEN Isnull(tj.sum_clje, 0) - Isnull(tb_out.sum_nclje_out, 0)
+                                                                 ELSE Isnull(tj.sum_clje, 0)
+                                                               END )
+                                                      END )
+                                             END ) - Isnull(tb_out.sum_nclje_out, 0) )
+         END )                                                            AS "考核计算料价毛利(不含税)",
+       CASE
+         WHEN Isnull(ldz, 0) = 0 THEN( Isnull(nwshjje, 0) )
+         ELSE ( Isnull(tj.sum_namount, 0) )
+       END                                                                合并金额,
+       CASE
+         WHEN Isnull(ldz, 0) = 0 THEN( Isnull(nwsgjhj, 0) )
+         ELSE (( Isnull(tj.sum_namount, 0) - Isnull(tj.sum_clje, 0) ))
+       END                                                                合并工价,
+       ( Isnull(nwshjje, 0) - Isnull(nwsbzhjje, 0) )                      AS "采购毛利(不含税)",
+       ( Isnull(nwsgjhj, 0) - Isnull(nwsbzgjhj, 0) )                      AS "采购工价毛利(不含税)",
+       ( Isnull(nwsclhj, 0) - Isnull(nwsbzclhj, 0) )                      AS "采购料价毛利(不含税)",
+       Isnull(nwshjje, 0)                                                 AS "合同总金额(不含税)",
+       Isnull(nwsgjhj, 0)                                                 AS "合同工价(不含税)",
+       Isnull(nwsclhj, 0)                                                 AS "合同材料(不含税)",
+       Isnull(nwsbzhjje, 0)                                               AS "标准总金额(不含税)",
+       Isnull(nwsbzgjhj, 0)                                               AS "标准工价(不含税)",
+       Isnull(nwsbzclhj, 0)                                               AS "标准料价(不含税)",
+       ord.nzkl                                                           AS 折扣率,
+       CASE
+         WHEN Isnull(tj.sum_namount, 0) = 0 THEN 0
+         ELSE ( CASE
+                  WHEN Isnull(tb_in.sum_ngjje_in, 0) + CASE
+                                                         WHEN ( Isnull(tj.sum_clje, 0) ) = 0 THEN 0
+                                                         ELSE ( CASE
+                                                                  WHEN ( Isnull(tb_out.sum_nhjje_out, 0) > ( Isnull(tj.sum_namount, 0) - Isnull(tj.sum_clje, 0) ) * 1.5 ) THEN 0
+                                                                  ELSE ( CASE
+                                                                           WHEN Isnull(tb_out.sum_nclje_out, 0) > 0 THEN Isnull(tj.sum_clje, 0) - Isnull(tb_out.sum_nclje_out, 0)
+                                                                           ELSE Isnull(tj.sum_clje, 0)
+                                                                         END )
+                                                                END )
+                                                       END = 0
+                       AND Isnull(tb_out.sum_nhjje_out, 0) = 0 THEN 0
+                  ELSE Isnull(tj.sum_namount, 0) - ( Isnull(tb_in.sum_ngjje_in, 0) + CASE
+                                                                                       WHEN ( Isnull(tj.sum_clje, 0) ) = 0 THEN 0
+                                                                                       ELSE ( CASE
+                                                                                                WHEN ( Isnull(tb_out.sum_nhjje_out, 0) > ( Isnull(tj.sum_namount, 0) - Isnull(tj.sum_clje, 0) ) * 1.5 ) THEN 0
+                                                                                                ELSE ( CASE
+                                                                                                         WHEN Isnull(tb_out.sum_nclje_out, 0) > 0 THEN Isnull(tj.sum_clje, 0) - Isnull(tb_out.sum_nclje_out, 0)
+                                                                                                         ELSE Isnull(tj.sum_clje, 0)
+                                                                                                       END )
+                                                                                              END )
+                                                                                     END ) - Isnull(tb_out.sum_nhjje_out, 0)
+                END )
+       END                                                                AS "生产毛利(不含税)",
+       CASE
+         WHEN Isnull(tj.sum_namount, 0) = 0 THEN 0
+         ELSE ( CASE
+                  WHEN Isnull(tb_in.sum_ngjje_in, 0) = 0
+                       AND Isnull(tb_out.sum_ngjje_out, 0) = 0 THEN 0
+                  ELSE Isnull(tj.sum_namount, 0) - Isnull(tj.sum_clje, 0) - Isnull(tb_in.sum_ngjje_in, 0) - Isnull(tb_out.sum_ngjje_out, 0)
+                END )
+       END                                                                AS "生产工价毛利(不含税)",
+       Isnull(tj.sum_clje, 0) - ( CASE
+                                    WHEN ( Isnull(tj.sum_clje, 0) ) = 0 THEN 0
+                                    ELSE ( CASE
+                                             WHEN ( Isnull(tb_out.sum_nhjje_out, 0) > ( Isnull(tj.sum_namount, 0) - Isnull(tj.sum_clje, 0) ) * 1.5 ) THEN 0
+                                             ELSE ( CASE
+                                                      WHEN Isnull(tb_out.sum_nclje_out, 0) > 0 THEN Isnull(tj.sum_clje, 0) - Isnull(tb_out.sum_nclje_out, 0)
+                                                      ELSE Isnull(tj.sum_clje, 0)
+                                                    END )
+                                           END )
+                                  END ) - Isnull(tb_out.sum_nclje_out, 0) AS "生产料价毛利(不含税)",
+       Isnull(tj.sum_namount, 0)                                          AS "订单计价金额(不含税)",
+       Isnull(tj.sum_namount, 0) - Isnull(tj.sum_clje, 0)                 AS "订单计价工价（不含税）",
+       Isnull(tj.sum_clje, 0)                                             AS "订单计价料价（不含税）",
+       Isnull(tb_in.sum_ngjje_in, 0) + CASE
+                                         WHEN ( Isnull(tj.sum_clje, 0) ) = 0 THEN 0
+                                         ELSE ( CASE
+                                                  WHEN ( Isnull(tb_out.sum_nhjje_out, 0) > ( Isnull(tj.sum_namount, 0) - Isnull(tj.sum_clje, 0) ) * 1.5 ) THEN 0
+                                                  ELSE ( CASE
+                                                           WHEN Isnull(tb_out.sum_nclje_out, 0) > 0 THEN Isnull(tj.sum_clje, 0) - Isnull(tb_out.sum_nclje_out, 0)
+                                                           ELSE Isnull(tj.sum_clje, 0)
+                                                         END )
+                                                END )
+                                       END                                AS "厂内传票合计(不含税)",
+       Isnull(tb_in.sum_ngjje_in, 0)                                      AS "厂内传票工价(不含税)",
+       CASE
+         WHEN ( Isnull(tj.sum_clje, 0) ) = 0 THEN 0
+         ELSE ( CASE
+                  WHEN ( Isnull(tb_out.sum_nhjje_out, 0) > ( Isnull(tj.sum_namount, 0) - Isnull(tj.sum_clje, 0) ) * 1.5 ) THEN 0
+                  ELSE ( CASE
+                           WHEN Isnull(tb_out.sum_nclje_out, 0) > 0 THEN Isnull(tj.sum_clje, 0) - Isnull(tb_out.sum_nclje_out, 0)
+                           ELSE Isnull(tj.sum_clje, 0)
+                         END )
+                END )
+       END                                                                AS "厂内传票料价(不含税)",
+       Isnull(tb_out.sum_nhjje_out, 0)                                    AS "发外传票合计(不含税)",
+       Isnull(tb_out.sum_ngjje_out, 0)                                    AS "发外传票工价(不含税)",
+       Isnull(tb_out.sum_nclje_out, 0)                                    AS "发外传票料价(不含税)",
+       CYJLX                                                              AS 印件类型,
+       CHY                                                                AS 活源,
+       CCLBMMC                                                            AS 承揽部门,
+       CYWYXM                                                             AS 业务员,
+       czdrxm                                                             AS 制单人,
+       lwcbs                                                              AS 是否完工,
+       Dwcrq                                                              AS 完工日期,
+       CONVERT(CHAR(10), djfrq, 121)                                      AS 交付日期,
+       LJQBS                                                              AS "是否结清(0未结，1已结)",
+       djqrq                                                              AS 结清日期,
+       izlconfirm                                                         AS 是否销货,
+       dzlconfirmrq                                                       AS 销货日期,
+       nzlconfirmje                                                       AS 销货金额,
+       nzlysje                                                            AS 销货应收,
+       Isnull(ipaytime, 0)                                                AS 帐龄,
+       ( CASE
+           WHEN ljqbs = 0
+                AND iZLConfirm = 1 THEN Cast (( Getdate() - dZlConfirmRQ ) AS INTEGER)
+           ELSE 0
+         END )                                                            AS 付款周期,
+       ( CASE
+           WHEN ljqbs = 0
+                AND iZLConfirm = 1 THEN Cast (( Getdate() - dZlConfirmRQ ) AS INTEGER) - Isnull(ipaytime, 0)
+           ELSE 0
+         END )                                                            AS 过期天数,
+       ( CASE
+           WHEN bsfsk = 1 THEN 1
+           ELSE 0
+         END )                                                            AS 是否收款,
+       nysje                                                              AS 预收款,
+       fskje                                                              AS 收款金额,
+       ( CASE
+           WHEN bsfdjfp = 1 THEN 1
+           ELSE 0
+         END )                                                            AS '是否开票',
+       Cast (Isnull(ffpje / ( 1 + nTaxRate ), 0) AS DECIMAL (18, 2))      AS 不含税发票金额,
+       nTaxRate                                                           税率,/*ffpje 含税发票金额*/
+       cfph                                                               AS 发票号,
+       cfprq                                                              AS 发票日期,
+       Cast (Isnull(( CASE
+                        WHEN Abs(nhjje) > 0.0001 THEN nhjje - ffpje
+                        ELSE 0
+                      END ) / ( 1 + nTaxRate ), 0)AS DECIMAL (18, 2))     AS 未开完票含税金额,
+       ( CASE
+           WHEN Abs(ffpje) > 0.0001 THEN nhjje - fskje
+           ELSE 0
+         END )                                                            AS 发票未收款金额,
+       iselforder                                                         AS 是否异常,
+       cselftype                                                          AS 异常类型,
+       Cast (CASE
+               WHEN iselforder = 1 THEN 0
+               ELSE ( CASE
+                        WHEN bsfdjfp = 1 THEN Isnull(( CASE
+                                                         WHEN Abs(nhjje) > 0.0001 THEN nhjje - ffpje
+                                                         ELSE 0
+                                                       END ) / ( 1 + nTaxRate ), 0)
+                        ELSE ( CASE
+                                 WHEN Isnull(tj.sum_namount, 0) > 0 THEN Isnull(tj.sum_namount, 0)
+                                 ELSE ( CASE
+                                          WHEN nzlconfirmje = 0 THEN nhjje
+                                          ELSE nzlconfirmje
+                                        END )
+                               END )
+                      END )
+             END AS DECIMAL (18, 2))                                      未开票不含税
+FROM   MCYD Ord
+       LEFT JOIN (SELECT ICYDID,
+                         Max(Nsc) AS Nsc
+                  FROM   SCYDDX
+                  WHERE  IDXLXID = 573
+                  GROUP  BY ICYDID) AS Obj
+         ON ord.ICYDID = Obj.ICYDID
+       LEFT JOIN (SELECT ICYDID,
+                         Sum(NYSLS) AS nysls,
+                         Sum(nyssl) AS nyssl,
+                         Sum(nsyl)  AS nsyl
+                  FROM   SCYDDX
+                  GROUP  BY ICYDID) AS ObjMatier
+         ON Ord.ICYDID = ObjMatier.ICYDID
+       LEFT JOIN (SELECT Sum(CASE
+                               WHEN hz.dz = 1 THEN hz.nhjje
+                               ELSE hz.传票预计价
+                             END) AS sum_nhjje_in,
+                         Sum(CASE
+                               WHEN hz.dz = 1 THEN hz.nhjje
+                               ELSE hz.传票预计价
+                             END) AS sum_ngjje_in,
+                         Sum(CASE
+                               WHEN hz.dz = 1 THEN hz.nclje
+                               ELSE hz.nclje
+                             END) AS sum_nclje_in,
+                         hz.ICYDID
+                  FROM   (SELECT yjj.传票预计价单号,
+                                 Isnull(yjj. 传票预计价, 0) 传票预计价,
+                                 yjj.iCYDID,
+                                 d.cjjdh               计价单号,
+                                 d.ccydh               订单号,
+                                 d.cbz                 备注,
+                                 d.ngjje,
+                                 d.nclje,
+                                 Isnull(d.iwjg, 0)     iwjg,
+                                 Isnull(d.lzfbs, 0)    lzfbs,
+                                 d.nhjje,
+                                 Isnull(d.ldz, 0)      dz,
+                                 yjj.bShbz
+                          FROM   (SELECT b.csccpbh  传票预计价单号,
+                                         a.ccydh,
+                                         a.icydid,
+                                         Sum(c.fje) 传票预计价,
+                                         b.bshbz
+                                  FROM   mcyd a
+                                         LEFT JOIN sccp b
+                                           ON a.icydid = b.icydid
+                                         LEFT JOIN ZbHjXm c
+                                           ON c.sccpid = b.sccpid
+                                  WHERE  b.bOutProcess = '0 '
+                                  GROUP  BY b.csccpbh,
+                                            a.icydid,
+                                            a.CCYDH,
+                                            b.bshbz,
+                                            b.bOutProcess) yjj
+                                 LEFT JOIN tbluey d
+                                   ON yjj.传票预计价单号 = CONVERT(VARCHAR(14), d.cjjdh)) hz
+                  WHERE  hz.iwjg = 0
+                         AND hz.bshbz = 1
+                         AND hz.lzfbs = 0
+                  GROUP  BY hz.ICYDID) tb_in
+         ON ord.icydid = tb_in.iCydid
+       LEFT JOIN (SELECT fw.iCYDID,
+                         sum_nhjje_out,
+                         sum_ngjje_out,
+                         sum_nclje_out,
+                         bz.cbz
+                  FROM   (SELECT Cast(Sum(( CASE
+                                              WHEN hz.dz = 0 THEN hz.传票预计价
+                                              ELSE hz.nhjje
+                                            END ) * 100 / ( 100 + hz.itax )) AS NUMERIC(18, 2)) AS sum_nhjje_out,
+                                 Cast(Sum(( CASE
+                                              WHEN hz.dz = 0 THEN hz.传票预计价
+                                              ELSE hz.nhjje
+                                            END ) * 100 / ( 100 + hz.itax )) AS NUMERIC(18, 2)) AS sum_ngjje_out,
+                                 Cast(Sum(CASE
+                                            WHEN hz.dz = 0 THEN hz.nclje
+                                            ELSE hz.nclje
+                                          END * 100 / ( 100 + hz.itax )) AS NUMERIC(18, 2))     AS sum_nclje_out,
+                                 iCydid
+                          FROM   (SELECT yjj.传票预计价单号,
+                                         Isnull(yjj. 传票预计价, 0) 传票预计价,
+                                         yjj.iCYDID,
+                                         d.cjjdh               计价单号,
+                                         d.ccydh               订单号,
+                                         d.cbz                 备注,
+                                         d.ngjje,
+                                         d.nclje,
+                                         d.itax,
+                                         Isnull(d.iwjg, 0)     iwjg,
+                                         Isnull(d.lzfbs, 0)    lzfbs,
+                                         d.nhjje,
+                                         Isnull(d.ldz, 0)      dz,
+                                         yjj.bShbz
+                                  FROM   (SELECT b.csccpbh  传票预计价单号,
+                                                 a.ccydh,
+                                                 a.icydid,
+                                                 Sum(c.fje) 传票预计价,
+                                                 b.bshbz
+                                          FROM   mcyd a
+                                                 LEFT JOIN sccp b
+                                                   ON a.icydid = b.icydid
+                                                 LEFT JOIN ZbHjXm c
+                                                   ON c.sccpid = b.sccpid
+                                          WHERE  b.bOutProcess = '1 '
+                                          GROUP  BY b.csccpbh,
+                                                    a.icydid,
+                                                    a.CCYDH,
+                                                    b.bshbz,
+                                                    b.bOutProcess) yjj
+                                         LEFT JOIN tbluey d
+                                           ON yjj.传票预计价单号 = CONVERT(VARCHAR(14), d.cjjdh)) hz
+                          WHERE  hz.iwjg = 1
+                                 AND hz.lzfbs = 0
+                          GROUP  BY hz.ICYDID) fw
+                         LEFT JOIN (SELECT icydid,
+                                           (SELECT cbz + ','
+                                            FROM   TBluey
+                                            WHERE  icydid = a.icydid
+                                            FOR xml path('')) AS cbz
+                                    FROM   TBluey a
+                                    GROUP  BY icydid) bz
+                           ON bz.icydid = fw.iCYDID) tb_out
+         ON ord.icydid = tb_out.iCydid
+       LEFT JOIN (SELECT Sum(namount)                                              AS sum_namount,
+                         Cast(Sum(nclje * 100 / ( 100 + itax )) AS NUMERIC(18, 2)) AS sum_clje,
+                         iCydid,
+                         CASE
+                           WHEN ldz = 1 THEN 1
+                           ELSE 0
+                         END                                                       ldz
+                  FROM   TJob
+                  WHERE  lzfbs = 0
+                  GROUP  BY iCydid,
+                            nclje,
+                            itax,
+                            ldz) tj
+         ON ord.ICYDID = tj.iCydid
+WHERE  ord.ICYDSTATE > 0
+       AND 1 = 1 /*wheres*/
